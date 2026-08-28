@@ -1,0 +1,6 @@
+{
+  "name": "Gospel & Jazz Piano Mastery - Novice Path",
+  "description": "Landing page and opt-in funnel for Daniel Ubachi's Gospel and Jazz Piano Mastery Course - Novice Foundations system.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

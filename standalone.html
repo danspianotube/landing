@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gospel & Jazz Piano Mastery - Novice Path | Daniel Ubachi</title>
+  <meta name="description" content="Discover how to find every piano note, play your first major scale and chord confidently, and create simple Gospel-sounding melodies.">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Work Sans', 'Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700;800;900&family=Oswald:wght@400;500;600;700&family=Work+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,700&display=swap" rel="stylesheet">
+
+  <!-- React 18 UMD & Babel Standalone -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    body {
+      font-family: 'Work Sans', sans-serif;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes scaleIn {
+      from { transform: scale(0.95); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .animate-fade-in {
+      animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .animate-scale-in {
+      animation: scaleIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+  </style>
+</head>
+<body class="bg-white text-slate-900 antialiased selection:bg-amber-400 selection:text-slate-900">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    // --- Audio Utility ---
+    let audioCtx = null;
+    function getAudioContext() {
+      if (!audioCtx) {
+        const AudioCtxClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioCtxClass) {
+          audioCtx = new AudioCtxClass();
+        }
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    const NOTE_FREQS = {
+      'C4': 261.63, 'C#4': 277.18, 'D4': 293.66, 'D#4': 311.13,
+      'E4': 329.63, 'F4': 349.23, 'F#4': 369.99, 'G4': 392.00,
+      'G#4': 415.30, 'A4': 440.00, 'A#4': 466.16, 'B4': 493.88,
+      'C5': 523.25
+    };
+
+    function playPianoNote(noteName, duration = 1.2) {
+      try {
+        const ctx = getAudioContext();
+        if (!ctx) return;
+        const freq = NOTE_FREQS[noteName];
+        if (!freq) return;
+
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, now);
+
+        gain.gain.setValueAtTime(0.001, now);
+        gain.gain.exponentialRampToValueAtTime(0.35, now + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(now);
+        osc.stop(now + duration + 0.05);
+      } catch (e) {
+        console.error('Audio error:', e);
+      }
+    }
+
+    function playChord(notes) {
+      notes.forEach((note, idx) => {
+        setTimeout(() => playPianoNote(note, 1.6), idx * 25);
+      });
+    }
+
+    // --- DATA ---
+    const HERO_HEADLINE = "Discover how to find every piano note, play your first major scale and chord confidently, and create simple Gospel-sounding melodies—even without understanding the keyboard";
+    const HERO_SUBHEADLINE = "The complete Novice Foundations system used by real church musicians who went from “I only know a few white keys” to playing with clarity and confidence — without years of classical lessons or random YouTube rabbit holes.";
+
+    const TOP_TESTIMONIALS = [
+      {
+        id: "josiah",
+        quote: "I kept starting and quitting for years…",
+        story: "I must have started and quit piano three or four times over the years. It always felt overwhelming and I never understood the basics properly. The Novice Path is different. Everything is explained clearly and in the right order. I just finished the section on inversions and I’m already playing smoother. I finally feel like I’m going to finish something in music.",
+        author: "Josiah",
+        age: 29,
+        role: "IT Support Specialist",
+        avatar: "https://images.clickfunnels.com/cdn-cgi/image/width=1000px,fit=scale-down,f=auto,q=80/https://statics.myclickfunnels.com/workspace/jdLnlz/image/23351789/file/4aa51c900c049aa3c3889a63adae49c5.jpg",
+        stars: 5
+      },
+      {
+        id: "deandre",
+        quote: "YouTube left me more confused than when I started…",
+        story: "I watched so many YouTube videos that I ended up more confused than when I started. Everyone taught random runs and chords with no foundation. Daniel’s Novice lessons start at the real beginning — notes, steps, scales, triads — and build properly. The short lessons fit my work schedule, and I finally know what I’m doing. For the first time I feel like I’m actually learning piano, not just collecting tips.",
+        author: "DeAndre",
+        age: 41,
+        role: "Accountant & Part-Time Worship Team Member",
+        avatar: "https://images.clickfunnels.com/cdn-cgi/image/width=1000px,fit=scale-down,f=auto,q=80/https://statics.myclickfunnels.com/workspace/jdLnlz/image/23351787/file/fcc9d5006acd01f81103481953aca038.jpg",
+        stars: 5
+      },
+      {
+        id: "maeve",
+        quote: "I only knew the white keys and felt stuck…",
+        story: "Before this, I only really knew some white keys and a couple of chords. I felt stuck and a bit ashamed that I’d been ‘playing’ for a while without real progress. The way Daniel teaches the notes, sharps and flats, the major scale formula, and then chords made everything click. Today I can build major triads on my own and I understand what I’m playing. It’s a huge shift.",
+        author: "Maeve",
+        age: 33,
+        role: "Administrative Assistant & Choir Member",
+        avatar: "https://images.clickfunnels.com/cdn-cgi/image/width=1000px,fit=scale-down,f=auto,q=80/https://statics.myclickfunnels.com/workspace/jdLnlz/image/23351788/file/04b1ebaa94eabb24f6adf0877f1b0977.jpg",
+        stars: 5
+      }
+    ];
+
+    const CURRICULUM_POINTS = [
+      { id: 1, title: "The exact pattern of black and white keys that lets you name any note on the piano in seconds", badge: "Lesson 1" },
+      { id: 2, title: "Why sharps and flats are actually simple once you know the one-step rule (and why the same black key can have two names)", badge: "Lesson 2" },
+      { id: 3, title: "The half-step / whole-step secret that unlocks every major scale on the piano", badge: "Lesson 3" },
+      { id: 4, title: "The major scale formula (Whole-Whole-Half-Whole-Whole-Whole-Half) so you can build a major scale starting on any note", badge: "Lesson 4" },
+      { id: 5, title: "How to build any major triad using the simple 4 + 3 formula — and why these chords sound bright, happy, and “church-ready”", badge: "Lesson 5" },
+      { id: 6, title: "The tonic “home note” that makes every song feel resolved and finished", badge: "Lesson 6" },
+      { id: 7, title: "Simple chord inversions so your hands stop jumping all over the keyboard and your playing starts to flow", badge: "Lesson 7" },
+      { id: 8, title: "How to turn those notes into short, soulful melodies you can actually play in service or at home", badge: "Lesson 8" }
+    ];
+
+    const DANIEL_CREDENTIALS = [
+      "15+ years Gospel piano experience",
+      "11 years Jazz piano",
+      "Church musician since 2011",
+      "Performed on platforms with over 10,000 seated guests",
+      "Shared stages with major artists",
+      "Featured in the largest premium Jazz concert on the continent (spanning 30+ countries)"
+    ];
+
+    const VALUE_STACK = [
+      { number: 1, title: "Complete Structured Video Lesson Series", value: 147 },
+      { number: 2, title: "Exact Daily Practice Plan", value: 67 },
+      { number: 3, title: "Printable + Interactive Progress Checklist", value: 37 },
+      { number: 4, title: "Instant Clarity System", value: 97 },
+      { number: 5, title: "Smooth Playing Foundations (Inversions + Simple Melodies)", value: 77 },
+      { number: 6, title: "Confidence & Orientation Bonus", value: 47 }
+    ];
+
+    const IMAGES = {
+      courseBundle: "https://images.clickfunnels.com/cdn-cgi/image/width=1000px,fit=scale-down,f=auto,q=80/https://statics.myclickfunnels.com/workspace/jdLnlz/image/23351293/file/2d474bc196ac34f6e0fe59b64a1d8feb.png",
+      fastActionBonus: "https://images.clickfunnels.com/cdn-cgi/image/width=1000px,fit=scale-down,f=auto,q=80/https://statics.myclickfunnels.com/image/1291573/file/b8e1ca4a2d5a4e67321b28e7c3b982fa.png",
+      guaranteeSeal: "https://images.clickfunnels.com/cdn-cgi/image/width=1000px,fit=scale-down,f=auto,q=80/https://statics.myclickfunnels.com/workspace/WvNweM/image/1978542/file/d518ec72d0601a5e705d52c4100717a0.png"
+    };
+
+    // --- Components ---
+
+    function UrgencyHeader() {
+      const [timeLeft, setTimeLeft] = useState(899); // 14:59
+
+      useEffect(() => {
+        const timer = setInterval(() => {
+          setTimeLeft(prev => (prev > 0 ? prev - 1 : 899));
+        }, 1000);
+        return () => clearInterval(timer);
+      }, []);
+
+      const minutes = Math.floor(timeLeft / 60);
+      const seconds = timeLeft % 60;
+      const formattedTime = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+      return (
+        <div className="bg-gradient-to-r from-red-700 via-amber-600 to-red-700 text-white py-2.5 px-4 text-center text-xs sm:text-sm font-semibold tracking-wide shadow-md sticky top-0 z-40 flex items-center justify-center gap-2">
+          <span className="inline-block w-2 h-2 rounded-full bg-yellow-300 animate-ping"></span>
+          <span>LIMITED TIME FREE ACCESS: Registration Closes in</span>
+          <span className="font-mono bg-black/40 px-2 py-0.5 rounded border border-white/20 text-yellow-300 text-sm font-bold">
+            {formattedTime}
+          </span>
+          <span className="hidden md:inline">| Free Novice Foundations + Fast Action Practice Guide</span>
+        </div>
+      );
+    }
+
+    function LeadCaptureForm({ idPrefix = 'form', onSuccess }) {
+      const [formData, setFormData] = useState({ name: '', phone: '', email: '', experience: 'complete-beginner' });
+      const [isSubmitting, setIsSubmitting] = useState(false);
+
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        if (!formData.name || !formData.phone || !formData.email) return;
+        setIsSubmitting(true);
+        setTimeout(() => {
+          setIsSubmitting(false);
+          if (onSuccess) onSuccess(formData);
+        }, 800);
+      };
+
+      return (
+        <form onSubmit={handleSubmit} className="bg-white p-6 rounded-2xl shadow-xl border border-slate-200">
+          <div className="text-center mb-5">
+            <h3 className="text-xl font-bold text-slate-900">Claim Your 100% Free Instant Access</h3>
+            <p className="text-xs text-slate-600 mt-1">Get immediate login to the masterclass, interactive tools & practice roadmap.</p>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Your First Name</label>
+              <input
+                type="text"
+                required
+                placeholder="e.g. David"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Your Phone Number</label>
+              <input
+                type="tel"
+                required
+                placeholder="e.g. +1 (555) 234-5678"
+                value={formData.phone}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Your Best Email Address</label>
+              <input
+                type="email"
+                required
+                placeholder="e.g. david@example.com"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Current Playing Level</label>
+              <select
+                value={formData.experience}
+                onChange={(e) => setFormData({ ...formData, experience: e.target.value })}
+                className="w-full px-3 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none text-sm bg-white"
+              >
+                <option value="complete-beginner">Complete Beginner (Starting from scratch)</option>
+                <option value="knows-some-keys">Know some white keys, stuck on chords</option>
+                <option value="church-beginner">Beginner looking to play in church / worship</option>
+              </select>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full py-4 px-6 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black text-base uppercase tracking-wider shadow-lg hover:shadow-xl transition-all transform active:scale-98 flex items-center justify-center gap-2 cursor-pointer"
+            >
+              {isSubmitting ? (
+                <span className="flex items-center gap-2">
+                  <svg className="animate-spin h-5 w-5 text-slate-950" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                  </svg>
+                  Unlocking Masterclass...
+                </span>
+              ) : (
+                <>
+                  <span>GET INSTANT FREE ACCESS</span>
+                  <span className="text-xl">➔</span>
+                </>
+              )}
+            </button>
+
+            <div className="flex items-center justify-center gap-2 text-[11px] text-slate-500 mt-2">
+              <span>🔒 100% Free Access</span>
+              <span>•</span>
+              <span>No Credit Card Required</span>
+              <span>•</span>
+              <span>Instant Digital Delivery</span>
+            </div>
+          </div>
+        </form>
+      );
+    }
+
+    function HeroSection({ onSuccess }) {
+      return (
+        <section className="relative pt-6 pb-14 sm:py-16 bg-gradient-to-b from-slate-50 via-white to-slate-100 border-b border-slate-200">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6">
+            <div className="text-center max-w-4xl mx-auto mb-8">
+              <span className="inline-block px-4 py-1 rounded-full bg-amber-100 text-amber-900 border border-amber-300 text-xs sm:text-sm font-extrabold uppercase tracking-widest mb-4">
+                FREE MASTERCLASS & SYSTEM BLUEPRINT
+              </span>
+              <h1 className="text-2xl sm:text-4xl md:text-5xl font-black text-slate-950 leading-tight tracking-tight mb-4">
+                {HERO_HEADLINE}
+              </h1>
+              <p className="text-base sm:text-lg text-slate-700 font-normal leading-relaxed max-w-3xl mx-auto">
+                {HERO_SUBHEADLINE}
+              </p>
+            </div>
+
+            <div className="grid lg:grid-cols-12 gap-8 items-start">
+              {/* Video Player Embed */}
+              <div className="lg:col-span-7">
+                <div className="relative w-full rounded-2xl overflow-hidden shadow-2xl bg-black border-4 border-white aspect-video group">
+                  <iframe
+                    title="Gospel and Jazz Piano Mastery - Novice Path Video"
+                    src="https://www.youtube-nocookie.com/embed/0hY6MPhi-7U?autoplay=1&mute=0&rel=0&modestbranding=1&controls=1&showinfo=0"
+                    className="w-full h-full object-cover"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                </div>
+
+                <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-600 bg-white/80 backdrop-blur-sm p-3 rounded-xl border border-slate-200">
+                  <div className="flex items-center gap-1.5 font-bold text-slate-800">
+                    <span className="text-amber-500 font-black">✔</span>
+                    <span>100% Free Masterclass</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 font-bold text-slate-800">
+                    <span className="text-amber-500 font-black">✔</span>
+                    <span>Beginner-Proof Step-By-Step</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 font-bold text-slate-800">
+                    <span className="text-amber-500 font-black">✔</span>
+                    <span>Over 1,200+ Novice Pianists Taught</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Lead Capture Form */}
+              <div className="lg:col-span-5">
+                <LeadCaptureForm onSuccess={onSuccess} />
+              </div>
+            </div>
+          </div>
+        </section>
+      );
+    }
+
+    function TestimonialsRow() {
+      return (
+        <section className="py-12 bg-slate-900 text-white">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6">
+            <div className="text-center mb-8">
+              <h2 className="text-xl sm:text-2xl font-bold tracking-tight">Real Students Who Broke Free From "Beginner Limbo"</h2>
+              <p className="text-xs sm:text-sm text-slate-400 mt-1">Ordinary people with busy jobs, families, and zero prior music theory</p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-6">
+              {TOP_TESTIMONIALS.map((t) => (
+                <div key={t.id} className="bg-slate-800/90 rounded-2xl p-5 border border-slate-700 flex flex-col justify-between shadow-lg">
+                  <div>
+                    <div className="flex items-center gap-1 text-amber-400 mb-3 text-sm">
+                      {"★".repeat(t.stars)}
+                    </div>
+                    <h3 className="font-bold text-amber-300 text-sm mb-2">"{t.quote}"</h3>
+                    <p className="text-xs text-slate-300 leading-relaxed italic">"{t.story}"</p>
+                  </div>
+                  <div className="flex items-center gap-3 mt-5 pt-4 border-t border-slate-700">
+                    <img src={t.avatar} alt={t.author} className="w-10 h-10 rounded-full object-cover border border-amber-400/50" />
+                    <div>
+                      <h4 className="text-xs font-bold text-white">{t.author}, {t.age}</h4>
+                      <p className="text-[10px] text-slate-400">{t.role}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      );
+    }
+
+    function InteractivePianoWidget() {
+      const [activeNotes, setActiveNotes] = useState([]);
+      const [currentChordName, setCurrentChordName] = useState('Select a Chord or Tap Keys');
+
+      const WHITE_KEYS = [
+        { note: 'C4', label: 'C' },
+        { note: 'D4', label: 'D' },
+        { note: 'E4', label: 'E' },
+        { note: 'F4', label: 'F' },
+        { note: 'G4', label: 'G' },
+        { note: 'A4', label: 'A' },
+        { note: 'B4', label: 'B' },
+        { note: 'C5', label: 'C5' }
+      ];
+
+      const BLACK_KEYS = [
+        { note: 'C#4', label: 'C#', left: '12.5%' },
+        { note: 'D#4', label: 'D#', left: '25.0%' },
+        { note: 'F#4', label: 'F#', left: '50.0%' },
+        { note: 'G#4', label: 'G#', left: '62.5%' },
+        { note: 'A#4', label: 'A#', left: '75.0%' }
+      ];
+
+      const PRESET_CHORDS = [
+        { name: 'C Major (1-3-5 Triad)', notes: ['C4', 'E4', 'G4'], desc: 'The fundamental church tonic chord. 4 + 3 formula.' },
+        { name: 'F Major (Subdominant)', notes: ['F4', 'A4', 'C5'], desc: 'The uplifting 4-chord in Gospel progressions.' },
+        { name: 'G Major (Dominant 7 Tension)', notes: ['G4', 'B4', 'D4'], desc: 'The pulling chord that resolves home to C.' },
+        { name: 'A Minor (Soulful 6-Chord)', notes: ['A4', 'C4', 'E4'], desc: 'Rich, emotional Gospel harmony.' }
+      ];
+
+      const handleKeyClick = (note) => {
+        playPianoNote(note);
+        setActiveNotes([note]);
+        setCurrentChordName(`Playing Note: ${note.replace('4', '').replace('5', '')}`);
+        setTimeout(() => setActiveNotes([]), 800);
+      };
+
+      const handleChordClick = (chord) => {
+        playChord(chord.notes);
+        setActiveNotes(chord.notes);
+        setCurrentChordName(chord.name);
+        setTimeout(() => setActiveNotes([]), 1600);
+      };
+
+      return (
+        <div className="bg-slate-900 text-white p-5 sm:p-6 rounded-2xl border border-slate-800 shadow-2xl my-8">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-4 border-b border-slate-800 pb-3">
+            <div>
+              <span className="text-[11px] font-mono uppercase tracking-widest text-amber-400 font-bold">Interactive Audio Tool</span>
+              <h3 className="text-lg font-bold text-white">Interactive Keyboard Foundation Preview</h3>
+            </div>
+            <div className="text-xs bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 text-amber-300 font-mono">
+              {currentChordName}
+            </div>
+          </div>
+
+          {/* Piano Keyboard Visual */}
+          <div className="relative max-w-2xl mx-auto h-48 sm:h-56 bg-slate-950 p-2 sm:p-3 rounded-2xl border-4 border-slate-800 shadow-inner flex justify-center select-none overflow-hidden">
+            <div className="relative w-full h-full">
+              {/* White Keys */}
+              <div className="flex w-full h-full">
+                {WHITE_KEYS.map((k) => {
+                  const isHighlighted = activeNotes.includes(k.note);
+                  return (
+                    <button
+                      key={k.note}
+                      type="button"
+                      onClick={() => handleKeyClick(k.note)}
+                      className={`relative flex-1 h-full rounded-b-lg border-r border-slate-300 transition-all flex flex-col justify-end items-center pb-3 cursor-pointer ${
+                        isHighlighted
+                          ? 'bg-amber-400 text-slate-950 shadow-inner translate-y-1'
+                          : 'bg-white hover:bg-slate-100 text-slate-700 active:bg-amber-200'
+                      }`}
+                    >
+                      <span className="text-xs font-bold font-mono pointer-events-none">{k.label}</span>
+                      {isHighlighted && <span className="absolute top-2 w-2.5 h-2.5 rounded-full bg-red-600 animate-ping" />}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Black Keys */}
+              <div className="absolute inset-0 pointer-events-none">
+                {BLACK_KEYS.map((k) => {
+                  const isHighlighted = activeNotes.includes(k.note);
+                  return (
+                    <button
+                      key={k.note}
+                      type="button"
+                      onClick={() => handleKeyClick(k.note)}
+                      style={{ left: k.left }}
+                      className={`pointer-events-auto absolute top-0 h-28 sm:h-34 w-[7.8%] sm:w-[8.2%] -translate-x-1/2 rounded-b-md z-10 transition-all cursor-pointer flex flex-col justify-end items-center pb-2 shadow-md ${
+                        isHighlighted
+                          ? 'bg-red-600 text-white shadow-lg translate-y-1 ring-2 ring-amber-300'
+                          : 'bg-slate-900 hover:bg-slate-800 text-slate-400 border-x border-b border-black'
+                      }`}
+                    >
+                      <span className="text-[10px] font-bold font-mono">{k.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* Chord Trigger Buttons */}
+          <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {PRESET_CHORDS.map((chord) => (
+              <button
+                key={chord.name}
+                type="button"
+                onClick={() => handleChordClick(chord)}
+                className="px-3 py-2 bg-slate-800 hover:bg-slate-700 active:bg-amber-500 active:text-slate-950 text-slate-200 rounded-lg text-xs font-bold transition-all border border-slate-700 hover:border-amber-400 text-center cursor-pointer"
+              >
+                {chord.name.split(' ')[0]} {chord.name.split(' ')[1]}
+              </button>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    function CurriculumMastery() {
+      return (
+        <section className="py-16 bg-white border-b border-slate-200">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6">
+            <div className="text-center max-w-3xl mx-auto mb-10">
+              <span className="text-amber-600 font-extrabold text-xs uppercase tracking-widest bg-amber-50 px-3 py-1 rounded-full border border-amber-200">
+                8-STEP ZERO TO CHURCH-READY BLUEPRINT
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-950 mt-3">
+                Everything You Will Master in The Novice Foundations Path
+              </h2>
+              <p className="text-sm text-slate-600 mt-2">
+                Designed specifically for adult learners who don't have hours to practice every day.
+              </p>
+            </div>
+
+            {/* Interactive Piano Preview */}
+            <InteractivePianoWidget />
+
+            {/* 8 Lessons Grid */}
+            <div className="grid md:grid-cols-2 gap-4 mt-8">
+              {CURRICULUM_POINTS.map((item) => (
+                <div key={item.id} className="p-4 rounded-xl border border-slate-200 bg-slate-50 hover:bg-white hover:shadow-md transition-all flex items-start gap-3.5">
+                  <span className="px-2.5 py-1 rounded-md bg-amber-500 text-slate-950 font-black text-xs font-mono shrink-0">
+                    {item.badge}
+                  </span>
+                  <p className="text-xs sm:text-sm font-semibold text-slate-800 leading-snug">
+                    {item.title}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            {/* Daniel's Credentials */}
+            <div className="mt-12 bg-gradient-to-br from-slate-900 to-slate-950 text-white rounded-2xl p-6 sm:p-8 border border-slate-800 shadow-xl">
+              <div className="max-w-3xl">
+                <span className="text-amber-400 text-xs font-bold uppercase tracking-wider">Meet Your Instructor</span>
+                <h3 className="text-xl sm:text-2xl font-black text-white mt-1">Daniel Ubachi</h3>
+                <p className="text-xs sm:text-sm text-slate-300 mt-2 leading-relaxed">
+                  Pianist, worship leader, and teacher with over 15 years of Gospel experience and 11 years in Jazz performance.
+                </p>
+
+                <div className="grid sm:grid-cols-2 gap-2 mt-5">
+                  {DANIEL_CREDENTIALS.map((cred, i) => (
+                    <div key={i} className="flex items-center gap-2 text-xs text-slate-300">
+                      <span className="text-amber-400 font-bold">✔</span>
+                      <span>{cred}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      );
+    }
+
+    function ValueStackSection({ onSuccess }) {
+      const totalValue = VALUE_STACK.reduce((acc, item) => acc + item.value, 0);
+
+      return (
+        <section className="py-16 bg-slate-50 border-b border-slate-200">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6">
+            <div className="text-center mb-10">
+              <span className="text-amber-700 font-extrabold text-xs uppercase tracking-widest bg-amber-100 px-3 py-1 rounded-full border border-amber-300">
+                COMPLETE VALUE BREAKDOWN
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-950 mt-3">
+                Here is Everything You Get Today for 100% Free
+              </h2>
+            </div>
+
+            <div className="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden mb-8">
+              <div className="p-6 sm:p-8 space-y-4">
+                {VALUE_STACK.map((item) => (
+                  <div key={item.number} className="flex items-center justify-between border-b border-slate-100 pb-3 last:border-b-0">
+                    <div className="flex items-center gap-3">
+                      <span className="w-6 h-6 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center font-bold text-xs">
+                        {item.number}
+                      </span>
+                      <span className="font-semibold text-slate-800 text-xs sm:text-sm">{item.title}</span>
+                    </div>
+                    <span className="font-mono text-slate-400 line-through text-xs sm:text-sm">${item.value} Value</span>
+                  </div>
+                ))}
+
+                <div className="pt-4 border-t-2 border-slate-200 flex items-center justify-between">
+                  <span className="font-extrabold text-slate-900 text-base">Total Value:</span>
+                  <span className="font-mono font-bold text-slate-500 line-through text-base">${totalValue}</span>
+                </div>
+
+                <div className="bg-amber-50 p-4 rounded-xl border border-amber-200 flex items-center justify-between">
+                  <div>
+                    <span className="text-xs font-bold text-amber-800 uppercase tracking-wide block">Today's Special Access Price:</span>
+                    <span className="text-2xl sm:text-3xl font-black text-slate-950">$0.00 (100% FREE)</span>
+                  </div>
+                  <span className="px-3 py-1 bg-amber-500 text-slate-950 font-black text-xs rounded-full uppercase">Instant Access</span>
+                </div>
+              </div>
+            </div>
+
+            <LeadCaptureForm onSuccess={onSuccess} />
+          </div>
+        </section>
+      );
+    }
+
+    function Footer() {
+      return (
+        <footer className="bg-slate-950 text-slate-400 py-10 border-t border-slate-800 text-xs">
+          <div className="max-w-6xl mx-auto px-4 text-center space-y-3">
+            <p className="text-slate-200 font-bold text-sm">Gospel & Jazz Piano Mastery — Novice Path with Daniel Ubachi</p>
+            <p className="text-slate-500 max-w-2xl mx-auto text-[11px] leading-relaxed">
+              This site is not part of the Facebook website or Meta Inc. Additionally, this site is NOT endorsed by Facebook in any way. FACEBOOK is a trademark of META, Inc.
+            </p>
+            <p className="text-slate-600 text-[10px]">
+              © {new Date().getFullYear()} Daniel Ubachi Piano Academy. All Rights Reserved.
+            </p>
+          </div>
+        </footer>
+      );
+    }
+
+    function SuccessModal({ isOpen, onClose, lead }) {
+      if (!isOpen || !lead) return null;
+
+      return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 sm:p-8 text-center animate-scale-in border border-slate-200">
+            <div className="w-16 h-16 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl font-black">
+              ✓
+            </div>
+            <h3 className="text-2xl font-black text-slate-900 mb-2">Congratulations, {lead.name}!</h3>
+            <p className="text-sm text-slate-600 mb-6 leading-relaxed">
+              Your free masterclass access has been registered for <strong className="text-slate-900">{lead.email}</strong>.
+            </p>
+
+            <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 text-left text-xs space-y-2 mb-6">
+              <p className="font-bold text-slate-800">Your Next 3 Immediate Steps:</p>
+              <div className="flex items-start gap-2">
+                <span className="text-amber-500 font-bold">1.</span>
+                <span>Watch the masterclass video training now on this page.</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-amber-500 font-bold">2.</span>
+                <span>Download your Novice Practice Checklist below.</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-amber-500 font-bold">3.</span>
+                <span>Practice 1 short 15-minute lesson today at your piano.</span>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <button
+                type="button"
+                onClick={() => {
+                  const blob = new Blob([
+                    `GOSPEL & JAZZ PIANO MASTERY - NOVICE FOUNDATIONS CHECKLIST\nStudent: ${lead.name}\nPhone: ${lead.phone || 'N/A'}\nEmail: ${lead.email}\n\nLESSON CHECKLIST:\n[ ] Lesson 1: Black and White Key Pattern (Name any note in seconds)\n[ ] Lesson 2: Sharps & Flats One-Step Rule\n[ ] Lesson 3: Half-Step / Whole-Step Master Secret\n[ ] Lesson 4: Major Scale Formula (W-W-H-W-W-W-H)\n[ ] Lesson 5: 4 + 3 Major Triad Formula (Instant Church Chords)\n[ ] Lesson 6: The Tonic "Home Note" Resolution Secret\n[ ] Lesson 7: Root, 1st & 2nd Inversions\n[ ] Lesson 8: Soulful Gospel Melodies in Service\n\nDaily Practice Rule: 1 Short Lesson + 1 Focused Hour.\nGod Bless Your Musical Calling!`
+                  ], { type: 'text/plain;charset=utf-8' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `Novice_Piano_Checklist_${lead.name.replace(/\s+/g, '_')}.txt`;
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                  setTimeout(() => URL.revokeObjectURL(url), 1000);
+                }}
+                className="w-full py-3 px-4 bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-black uppercase tracking-wider rounded-xl shadow-md transition-colors cursor-pointer"
+              >
+                Download Practice Checklist (.txt)
+              </button>
+
+              <button
+                type="button"
+                onClick={onClose}
+                className="w-full py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-colors cursor-pointer"
+              >
+                Continue to Training
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // --- Main App Component ---
+    function App() {
+      const [submittedLead, setSubmittedLead] = useState(null);
+      const [isSuccessOpen, setIsSuccessOpen] = useState(false);
+
+      const handleSuccess = (lead) => {
+        setSubmittedLead(lead);
+        setIsSuccessOpen(true);
+      };
+
+      return (
+        <div className="min-h-screen flex flex-col bg-white">
+          <UrgencyHeader />
+          <HeroSection onSuccess={handleSuccess} />
+          <TestimonialsRow />
+          <CurriculumMastery />
+          <ValueStackSection onSuccess={handleSuccess} />
+          <Footer />
+          <SuccessModal
+            isOpen={isSuccessOpen}
+            onClose={() => setIsSuccessOpen(false)}
+            lead={submittedLead}
+          />
+        </div>
+      );
+    }
+
+    // Mount Application
+    const rootElement = document.getElementById('root');
+    if (rootElement) {
+      const root = ReactDOM.createRoot(rootElement);
+      root.render(<App />);
+    }
+  </script>
+</body>
+</html>
